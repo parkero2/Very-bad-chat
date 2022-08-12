@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messenger</title>
+    <style>
+        body {
+            background-image: url("bg");
+        }
+        #contain {
+            background-color: azure;
+            opacity: 75%;
+            width: fit-content;
+            margin: auto;
+            padding: 10px;
+        }
+        #logo {
+            margin: auto;
+        }
+        #message {
+            width: fit-content;
+            margin: auto;
+            padding: 10px;
+        }
+    </style>
+    <script>
+        //Confirm user choice and close tab if declined
+        confirm("The following messaging app was built for fun and educational pourposes. It is suseptable web exploits and poor programming practices.\n\nPlease close the tab if you do not wish to use this app.")
+        var messages = {}
+        var setIntF;
+        let notf = new Audio("/notification");
+        function wipeMessages() {
+            let auth = prompt("Please enter your password to wipe all messages");
+            //GET /wipe with the auth header set to auth
+            let WipeReq = new XMLHttpRequest();
+            WipeReq.open("GET", "/wipe", true);
+            WipeReq.setRequestHeader("Cod", auth);
+            WipeReq.onload = function() {
+                if(this.status == 200) {
+                    alert(`Wiped messages`);
+                } else {
+                    alert(`Error: ${this.status}`);
+                }
+            }
+            
+            WipeReq.send()
+        }
+        function updatePolling() {
+            if (document.getElementById("PolCheck").checked) {
+                document.getElementById("PolCheck").checked = false;
+                let rate = "dfg";
+                while (isNaN(rate)) {
+                    rate = prompt("Enter polling rate in ms")
+                }
+                setIntF = setInterval(() => {
+                    refreshData();
+                }, rate)
+                return
+            }
+            clearInterval(setIntF)
+        }
+        function daddy() {
+            let data = {
+                "name" : document.getElementById("name").value,
+                "message" : document.getElementById("messageIn").value
+            }
+            let req = new XMLHttpRequest()
+            req.open("POST", "/send", true)
+            req.setRequestHeader("data", JSON.stringify(data))
+            req.send()
+            refreshData()
+            document.getElementById("messageIn").value = ""
+        }
+        function refreshData() {
+            //notf.play()
+            let req = new XMLHttpRequest();`
+            req.open("GET", "/getData", true);
+            function loaded(event) {
+                let messarr = JSON.parse(req.response)["data"].reverse()
+                let divelm = document.getElementById("messages");
+                let olddat = divelm.innerHTML;
+                divelm.innerHTML = "";
+                for (let i = 0; i < messarr.length; i++) {
+                    let y = document.createElement("div")
+                    y.innerHTML = `<p><b>${JSON.parse(messarr[i]).name}</b>: ${JSON.parse(messarr[i]).message}</p>`
+                    divelm.appendChild(y)
+                }
+                console.log(divelm.innerHTML == olddat)
+                if (!divelm.innerHTML == olddat) {
+                    //Play notif
+                    notf.play();
+                }
+            }
+            req.addEventListener("load", loaded)
+            req.send()
+        }
+    </script>
+</head>
+<body>
+    <div id="contain">
+        <image src="/logo" id="logo"></image>
+        <div id="message">
+            <input id="name" placeholder="name">
+            <br>
+            <textarea id="messageIn"></textarea>
+            <br>
+            <button id="submit" onclick="daddy()">Submit</button>
+            <br>
+            <p>Enabe polling?</p><input type="radio" id="PolCheck" onclick="updatePolling()">
+            <button id="refresh" onclick="refreshData()">Refresh</button>
+            <button id="clear" onclick="wipeMessages()">Clear messages</button>
+        </div>
+        <br>
+        <div id="messages">
+            <p>No messages</p>
+        </div>
+    </div>
+</body>
+</html>
