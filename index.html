@@ -75,7 +75,7 @@
         }
         function refreshData() {
             //notf.play()
-            let req = new XMLHttpRequest();`
+            let req = new XMLHttpRequest();
             req.open("GET", "/getData", true);
             function loaded(event) {
                 let messarr = JSON.parse(req.response)["data"].reverse()
